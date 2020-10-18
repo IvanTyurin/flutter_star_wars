@@ -10,14 +10,21 @@ class NetworkService {
   void Function(List<Character>) callback;
 
   String url = "https://swapi.dev/api/people/";
-  List<Character> charactersList;
+  List<Character> charactersList = [];
+  bool inSearch = false;
   String buf;
 
   void sendRequest([String searchRequest]) async {
     String requestUrl;
 
+    if(!inSearch) inSearch = true;
+
     if(searchRequest != null) {
-      requestUrl = url + "?search=$searchRequest";
+      if(searchRequest.contains("http", 0)) {
+        requestUrl = searchRequest;
+      } else {
+        requestUrl = url + "?search=$searchRequest";
+      }
     } else {
       requestUrl = url;
     }
@@ -35,21 +42,24 @@ class NetworkService {
   }
 
   List<Character> convertJsonData(String rowData) {
-    List<Character> charactersList;
+
     Map<String, dynamic> firstDecode = jsonDecode(rowData);
 
     if(firstDecode.containsKey("count")) {
-      print(firstDecode["results"].runtimeType);
       List<dynamic> results = firstDecode["results"];
       results.forEach((element) {
         Character buf = Character.fromJson(element);
-        if(charactersList == null) charactersList = [buf];
-        else charactersList.add(buf);
+        charactersList.add(buf);
       });
     }
-
-    if(charactersList != null) {
-      callback(charactersList);
+    if(firstDecode["next"] != null) {
+      sendRequest(firstDecode["next"].toString());
+    } else {
+      if(charactersList != null) {
+        callback(charactersList);
+      }
+      charactersList = [];
+      inSearch = false;
     }
   }
 }

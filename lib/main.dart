@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_star_wars/data/Character.dart';
 import 'package:flutter_star_wars/data/NetworkService.dart';
+import 'package:flutter_star_wars/views/DetailScreen.dart';
 
 void main() {
   runApp(MyApp());
@@ -11,21 +12,20 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      debugShowCheckedModeBanner: false,
       title: 'Flutter Demo',
       theme: ThemeData(
         primarySwatch: Colors.amber,
+        backgroundColor: Colors.black87,
+        textTheme: Theme.of(context).textTheme.apply(bodyColor: Colors.white70),
         visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
-      home: MyHomePage(title: 'Flutter Demo Home Page'),
+      home: MyHomePage(),
     );
   }
 }
 
 class MyHomePage extends StatefulWidget {
-  MyHomePage({Key key, this.title}) : super(key: key);
-
-
-  final String title;
 
   @override
   _MyHomePageState createState() => _MyHomePageState();
@@ -48,49 +48,39 @@ class _MyHomePageState extends State<MyHomePage> {
     });
   }
 
-//  _MyHomePageState() {
-//    _controller.addListener(() {
-//      if(_controller.text.isEmpty) {
-//        searchString = "";
-//      } else {
-//        searchString = _controller.text;
-//        print(searchString);
-//      }
-//    });
-//  }
-
-
   @override
   void initState() {
     super.initState();
     network.callback = (List<Character> data) {
       onDataRecieved(data);
     };
+    network.sendRequest();
   }
 
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: buildAppBar(context),
+      appBar: _buildAppBar(context),
       body: Center(
-        child: ListView.separated(
-              padding: EdgeInsets.all(2),
-              itemCount: charactersList.length,
-              itemBuilder: (context, index) {
-                return Container(
-                  height: 30,
-                  child: Center(
-                    child: Text('${charactersList[index].name}'),
-                  ),
-                );
-              },
-              separatorBuilder: (BuildContext context, int index) {
-                return Divider();
-              },
-            )
+        child: Container(
+          color: Colors.black87,
+          child: ListView.separated(
+            padding: EdgeInsets.only(top: 10.0, bottom: 10.0),
+            itemCount: charactersList.length,
+            itemBuilder: _buildListItem,
+            separatorBuilder: (BuildContext context, int index) {
+              return Container(
+                padding: EdgeInsets.symmetric(vertical: 0.0, horizontal: 2.0),
+                child: Divider(
+                  color: Colors.amber,
+                ),
+              );
+            },
+          ),
+        )
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          network.sendRequest();
+
         },
         child: Icon(Icons.update),
         backgroundColor: Colors.amber,
@@ -98,24 +88,47 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 
-  Widget buildAppBar(BuildContext context) {
+  Widget _buildAppBar(BuildContext context) {
     return AppBar(centerTitle: true,
         title: TextField(
           controller: _controller,
           style: TextStyle(
-            color: Colors.black38
+            color: Colors.black87
           ),
           decoration: InputDecoration(
-            prefixIcon: Icon(Icons.search, color: Colors.black38,),
+            prefixIcon: Icon(Icons.search, color: Colors.black87,),
             hintText: "Search",
-            hintStyle: TextStyle(color: Colors.black38),
+            hintStyle: TextStyle(color: Colors.black87),
           ),
-          onChanged: searchProvider,
-        )
+          onChanged: (data) {
+            if(!network.inSearch) {
+              searchProvider(data);
+            }
+          })
+    );
+  }
+
+  Widget _buildListItem(BuildContext context, int index) {
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(context,
+        MaterialPageRoute(builder: (context) {
+          return DetailScreen(characterData: charactersList[index]);
+        }));
+      },
+      child: Container(
+          padding: EdgeInsets.symmetric(vertical: 8.0, horizontal: 12.0),
+          child: Container(
+            alignment: Alignment.centerLeft,
+            child: Text('${charactersList[index].name}'),
+          )
+      ),
     );
   }
 
   void searchProvider(String searchString) {
     network.sendRequest(searchString);
   }
+
+
 }
