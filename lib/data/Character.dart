@@ -1,7 +1,7 @@
 class Character {
   String name;
-  int height;
-  int mass;
+  String height;
+  String mass;
   String hairColor;
   String skinColor;
   String eyeColor;
@@ -15,8 +15,8 @@ class Character {
 
   Character() : super() {
     name = "";
-    height = 0;
-    mass = 0;
+    height = "";
+    mass = "";
     hairColor = "";
     skinColor = "";
     eyeColor = "";
@@ -39,9 +39,9 @@ class Character {
     birthYear = json['birth_year'];
     gender = json['gender'];
     homeWorld = json['homeworld'];
-    films = json['films'];
-    species = json['species'];
-    vehicles = json['vehicles'];
-    starships = json['starships'];
+    films = List<String>.from(json['films']);
+    species = List<String>.from(json['species']);
+    vehicles = List<String>.from(json['vehicles']);
+    starships = List<String>.from(json['starships']);
   }
 }

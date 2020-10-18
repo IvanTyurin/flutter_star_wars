@@ -24,6 +24,7 @@ class MyApp extends StatelessWidget {
 class MyHomePage extends StatefulWidget {
   MyHomePage({Key key, this.title}) : super(key: key);
 
+
   final String title;
 
   @override
@@ -31,18 +32,24 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  NetworkService ns = NetworkService.instance;
-
+  NetworkService network = new NetworkService();
   List<Character> charactersList = [];
 
   void onDataRecieved(List<Character> list) {
     setState(() {
-      charactersList = list;
+      if(list == null) {
+        print("CHARACTERS NULL!");
+      } else {
+        charactersList = list;
+      }
     });
   }
 
   @override
   Widget build(BuildContext context) {
+    network.callback = (List<Character> data) {
+      onDataRecieved(data);
+    };
 
     return Scaffold(
       appBar: AppBar(
@@ -67,7 +74,7 @@ class _MyHomePageState extends State<MyHomePage> {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          ns.connect();
+          network.sendRequest();
         },
         child: Icon(Icons.update),
         backgroundColor: Colors.amber,

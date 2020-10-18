@@ -8,20 +8,40 @@ import 'Character.dart';
 class NetworkService {
 
   void Function(List<Character>) callback;
-  static final NetworkService instance = NetworkService();
 
   String url = "https://swapi.dev/api/people/";
   List<Character> charactersList;
+  String buf;
 
-  void connect() async {
-    var responce = await http.get(url);
-
-    if(responce.statusCode == 200) {
-      print(responce.body);
-    }
+  void sendRequest() async {
+    await http.get(url).then((value) {
+      if(value.statusCode == 200) {
+        print(value.body);
+        buf = value.body;
+      }
+    }).whenComplete(() {
+      if(buf != null) {
+        convertJsonData(buf);
+      }
+    });
   }
 
-  List<Character> convert() {
+  List<Character> convertJsonData(String rowData) {
+    List<Character> charactersList;
+    Map<String, dynamic> firstDecode = jsonDecode(rowData);
 
+    if(firstDecode.containsKey("count")) {
+      print(firstDecode["results"].runtimeType);
+      List<dynamic> results = firstDecode["results"];
+      results.forEach((element) {
+        Character buf = Character.fromJson(element);
+        if(charactersList == null) charactersList = [buf];
+        else charactersList.add(buf);
+      });
+    }
+
+    if(charactersList != null) {
+      callback(charactersList);
+    }
   }
 }
