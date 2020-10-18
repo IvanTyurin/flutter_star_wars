@@ -13,8 +13,16 @@ class NetworkService {
   List<Character> charactersList;
   String buf;
 
-  void sendRequest() async {
-    await http.get(url).then((value) {
+  void sendRequest([String searchRequest]) async {
+    String requestUrl;
+
+    if(searchRequest != null) {
+      requestUrl = url + "?search=$searchRequest";
+    } else {
+      requestUrl = url;
+    }
+
+    await http.get(requestUrl).then((value) {
       if(value.statusCode == 200) {
         print(value.body);
         buf = value.body;
