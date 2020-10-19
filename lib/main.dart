@@ -37,6 +37,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
   final TextEditingController _controller = new TextEditingController();
   String searchString = "";
+  bool searchIsEmpty = false;
 
   void onDataRecieved(List<Character> list) {
     setState(() {
@@ -58,25 +59,35 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   Widget build(BuildContext context) {
+    int count = 0;
+
+    if(charactersList.length == 0) {
+      count = 1;
+      searchIsEmpty = true;
+    } else {
+      count = charactersList.length;
+      searchIsEmpty = false;
+    }
+
     return Scaffold(
       appBar: _buildAppBar(context),
       body: Center(
-        child: Container(
-          color: Colors.black87,
-          child: ListView.separated(
-            padding: EdgeInsets.only(top: 10.0, bottom: 10.0),
-            itemCount: charactersList.length,
-            itemBuilder: _buildListItem,
-            separatorBuilder: (BuildContext context, int index) {
-              return Container(
-                padding: EdgeInsets.symmetric(vertical: 0.0, horizontal: 2.0),
-                child: Divider(
-                  color: Colors.amber,
-                ),
-              );
-            },
-          ),
-        )
+          child: Container(
+            color: Colors.black87,
+            child: ListView.separated(
+              padding: EdgeInsets.only(top: 10.0, bottom: 10.0),
+              itemCount: count,
+              itemBuilder: _buildListItem,
+              separatorBuilder: (BuildContext context, int index) {
+                return Container(
+                  padding: EdgeInsets.symmetric(vertical: 0.0, horizontal: 2.0),
+                  child: Divider(
+                    color: Colors.amber,
+                  ),
+                );
+              },
+            ),
+          )
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
@@ -101,14 +112,16 @@ class _MyHomePageState extends State<MyHomePage> {
             hintStyle: TextStyle(color: Colors.black87),
           ),
           onChanged: (data) {
-            if(!network.inSearch) {
               searchProvider(data);
-            }
           })
     );
   }
 
   Widget _buildListItem(BuildContext context, int index) {
+    String name = "No search results";
+    if(!searchIsEmpty) {
+      name = charactersList[index].name;
+    }
     return GestureDetector(
       onTap: () {
         Navigator.push(context,
@@ -120,15 +133,13 @@ class _MyHomePageState extends State<MyHomePage> {
           padding: EdgeInsets.symmetric(vertical: 8.0, horizontal: 12.0),
           child: Container(
             alignment: Alignment.centerLeft,
-            child: Text('${charactersList[index].name}'),
+            child: Text('$name'),
           )
       ),
     );
   }
 
   void searchProvider(String searchString) {
-    network.sendRequest(searchString);
+    network.search(searchString);
   }
-
-
 }

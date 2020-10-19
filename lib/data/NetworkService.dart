@@ -1,7 +1,6 @@
 import 'dart:convert';
-import 'dart:io';
-import 'dart:typed_data';
 
+import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'Character.dart';
 
@@ -17,15 +16,12 @@ class NetworkService {
   void sendRequest([String searchRequest]) async {
     String requestUrl;
 
-    if(!inSearch) inSearch = true;
-
     if(searchRequest != null) {
       if(searchRequest.contains("http", 0)) {
         requestUrl = searchRequest;
-      } else {
-        requestUrl = url + "?search=$searchRequest";
       }
     } else {
+      charactersList = [];
       requestUrl = url;
     }
 
@@ -39,6 +35,18 @@ class NetworkService {
         convertJsonData(buf);
       }
     });
+  }
+
+  void search(String searchString) {
+    List<Character> result = [];
+    String searchStr = searchString.toLowerCase();
+    charactersList.forEach((element) {
+      String name = element.name.toLowerCase();
+      if(name.contains(searchStr)) result.add(element);
+    });
+    if(result != null) {
+      callback(result);
+    }
   }
 
   List<Character> convertJsonData(String rowData) {
@@ -58,8 +66,6 @@ class NetworkService {
       if(charactersList != null) {
         callback(charactersList);
       }
-      charactersList = [];
-      inSearch = false;
     }
   }
 }
